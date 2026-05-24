@@ -1,7 +1,70 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { useState, useEffect, useRef } from 'react'; // useState para recordar si la musica esta sonando
+//useEffect para limpiar la memoria
+import {Audio} from 'expo-av'; //Importamos el motor de audio
 
 export default function App() {
+
+  //variables para controlar la reproduccion
+  const soundRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  useEffect(() => {
+    // 1. Configuramos los permisos del OS para permitir que el audio suene siempre
+    async function setupAudio() {
+      try {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: true,
+        });
+      } catch (e) {
+        console.log("Error configurando audio:", e);
+      }
+    }
+    setupAudio();
+
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
+    };
+  }, []);
+
+  async function handlePlayPause() {
+    if (isLoading) return; // Si el audio está cargando, ignoramos el click
+
+    try {
+      if (soundRef.current) {
+        if (isPlaying) {
+          await soundRef.current.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          await soundRef.current.playAsync();
+          setIsPlaying(true);
+        }
+      } else {
+        setIsLoading(true);
+        console.log('Cargando archivo de audio por primera vez...');
+        
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          require('./SRC/assets/Prueba.mp3')
+        );
+        
+        soundRef.current = newSound;
+        await newSound.playAsync();
+        setIsPlaying(true);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      // Extraemos el mensaje de error real
+      console.log('Error detallado:', error.message || error);
+      setIsLoading(false);
+    }
+  }
   return (
     <View style={styles.container}>
 
@@ -12,18 +75,24 @@ export default function App() {
 
       {/* Información de la pista */}
       <View style={styles.trackInfo}>
-        <Text style={styles.trackTitle}>Nombre de la Canción</Text>
-        <Text style={styles.trackArtist}>Artista Desconocido</Text>
+        <Text style={styles.trackTitle}>Cancion</Text>
+        <Text style={styles.trackArtist}>Tame Impala</Text>
       </View>
 
       {/* Controles de reproducción */}
-      <View style={styles.controlsContainer}>
+      <View style={styles.controlsContjainer}>
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Anterior</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={[styles.button, styles.playButton]}>
-          <Text style={styles.buttonText}>Play / Pause</Text>
+        <TouchableOpacity 
+          style={[styles.button, styles.playButton]} 
+          onPress={handlePlayPause}
+        >
+          {/* Mostramos "Cargando..." para saber qué está haciendo internamente */}
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Cargando...' : isPlaying ? 'Pause' : 'Play'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button}>
