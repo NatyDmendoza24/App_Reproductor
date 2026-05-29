@@ -1,11 +1,11 @@
 import ControlesReproductor from './src/components/ControlesReproductor';
+import BarraDeProgreso from './src/components/BarraDeProgreso';
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { Audio } from 'expo-av';
 import * as DocumentPicker from 'expo-document-picker';
-import Slider from '@react-native-community/slider'; // Importar barra deslizante
 
 export default function App() {
   const soundRef = useRef(null);
@@ -33,15 +33,6 @@ export default function App() {
       }
     };
   }, []);
-
-  // Convierte milisegundos a formato minutos:segundos (Ej. 03:15)
-  const formatearTiempo = (milisegundos) => {
-    if (!milisegundos) return '00:00';
-    const totalSegundos = Math.floor(milisegundos / 1000);
-    const minutos = Math.floor(totalSegundos / 60);
-    const segundos = totalSegundos % 60;
-    return `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
-  };
 
   // Esta función se ejecuta automáticamente varias veces por segundo mientras suena la música
   const actualizarEstadoReproduccion = (estado) => {
@@ -138,22 +129,11 @@ export default function App() {
       </View>
 
       {/* Nueva sección: Barra de Progreso y Tiempo */}
-      <View style={styles.progressContainer}>
-        <Text style={styles.timeText}>{formatearTiempo(posicion)}</Text>
-        
-        <Slider
-          style={styles.slider}
-          minimumValue={0}
-          maximumValue={duracion}
-          value={posicion}
-          minimumTrackTintColor="#1db954" // Color de la parte "reproducida"
-          maximumTrackTintColor="#404040" // Color de la parte restante
-          thumbTintColor="#1db954" // Color del círculo que arrastras
-          onSlidingComplete={arrastrarBarra}
-        />
-        
-        <Text style={styles.timeText}>{formatearTiempo(duracion)}</Text>
-      </View>
+      <BarraDeProgreso 
+        posicion={posicion}
+        duracion={duracion}
+        alArrastrar={arrastrarBarra}
+      />
 
      <ControlesReproductor 
         cancionActual={cancionActual}
@@ -195,23 +175,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 20,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 30,
-  },
-  slider: {
-    flex: 1,
-    height: 40,
-    marginHorizontal: 10,
-  },
-  timeText: {
-    color: '#b3b3b3',
-    fontSize: 14,
-    width: 45,
-    textAlign: 'center',
   }
 });
