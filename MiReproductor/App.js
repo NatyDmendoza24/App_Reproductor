@@ -1,3 +1,5 @@
+import ControlesReproductor from './src/components/ControlesReproductor';
+
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
@@ -153,17 +155,12 @@ export default function App() {
         <Text style={styles.timeText}>{formatearTiempo(duracion)}</Text>
       </View>
 
-      <View style={styles.controlsContainer}>
-        <TouchableOpacity 
-          style={[styles.playButton, !cancionActual && styles.disabledButton]} 
-          onPress={handlePlayPause}
-          disabled={!cancionActual}
-        >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Cargando...' : isPlaying ? 'Pause' : 'Play'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+     <ControlesReproductor 
+        cancionActual={cancionActual}
+        isPlaying={isPlaying}
+        isLoading={isLoading}
+        alPresionarPlay={handlePlayPause}
+      />
 
       <StatusBar style="light" />
     </View>
@@ -216,25 +213,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     width: 45,
     textAlign: 'center',
-  },
-  controlsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  playButton: {
-    backgroundColor: '#1db954',
-    borderRadius: 50,
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-  },
-  disabledButton: {
-    backgroundColor: '#555555',
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
   }
 });
